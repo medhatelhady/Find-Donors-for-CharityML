@@ -1,0 +1,17 @@
+{
+  "features": {
+    "age": 39,
+    "workclass": " State-gov",
+    "education_level": " Bachelors",
+    "education-num": 13.0,
+    "marital-status": " Never-married",
+    "occupation": " Adm-clerical",
+    "relationship": " Not-in-family",
+    "race": " White",
+    "sex": " Male",
+    "capital-gain": 2174.0,
+    "capital-loss": 0.0,
+    "hours-per-week": 40.0,
+    "native-country": " United-States"
+  }
+}

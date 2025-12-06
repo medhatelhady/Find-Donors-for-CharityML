@@ -1,56 +1,258 @@
+# End-to-End ML Pipeline
 
-# Supervised Learning
-## Project: Finding Donors for CharityML
+A production-ready machine learning pipeline for income prediction using Census data. Features sklearn Pipeline with ColumnTransformer for preprocessing, Decision Tree classifier, and Docker deployment.
 
-### Install
+## Project Structure
 
-This project requires **Python 3.x** and the following Python libraries installed:
-
-- [NumPy](http://www.numpy.org/)
-- [Pandas](http://pandas.pydata.org)
-- [matplotlib](http://matplotlib.org/)
-- [scikit-learn](http://scikit-learn.org/stable/)
-
-You will also need to have software installed to run and execute an [iPython Notebook](http://ipython.org/notebook.html)
-
-We recommend students install [Anaconda](https://www.continuum.io/downloads), a pre-packaged Python distribution that contains all of the necessary libraries and software for this project. 
-
-### Code
-
-Template code is provided in the `finding_donors.ipynb` notebook file. You will also be required to use the included `visuals.py` Python file and the `census.csv` dataset file to complete your work. While some code has already been implemented to get you started, you will need to implement additional functionality when requested to successfully complete the project. Note that the code included in `visuals.py` is meant to be used out-of-the-box and not intended for students to manipulate. If you are interested in how the visualizations are created in the notebook, please feel free to explore this Python file.
-
-### Run
-
-In a terminal or command window, navigate to the top-level project directory `finding_donors/` (that contains this README) and run one of the following commands:
-
-```bash
-ipython notebook finding_donors.ipynb
-```  
-or
-```bash
-jupyter notebook finding_donors.ipynb
+```
+ml-pipeline/
+├── data/
+│   └── raw/
+│       └── census.csv          # Census income dataset
+├── src/
+│   ├── data/
+│   │   ├── loader.py           # Data loading
+│   │   └── preprocessor.py     # sklearn Pipeline preprocessing
+│   ├── models/
+│   │   └── trainer.py          # Decision Tree training
+│   └── deployment/
+│       └── api.py              # Flask REST API
+├── configs/
+│   └── config.yaml             # Configuration
+├── models/                     # Saved models (generated)
+├── notebooks/                  # Exploratory notebooks
+├── Dockerfile                  # Docker configuration
+├── requirements.txt            # Python dependencies
+└── sample_request.json         # Example API request
 ```
 
-This will open the iPython Notebook software and project file in your browser.
+## Quick Start
 
-### Data
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-The modified census dataset consists of approximately 32,000 data points, with each datapoint having 13 features. This dataset is a modified version of the dataset published in the paper *"Scaling Up the Accuracy of Naive-Bayes Classifiers: a Decision-Tree Hybrid",* by Ron Kohavi. You may find this paper [online](https://www.aaai.org/Papers/KDD/1996/KDD96-033.pdf), with the original dataset hosted on [UCI](https://archive.ics.uci.edu/ml/datasets/Census+Income).
+### 2. Train Model
+```bash
+python src/train_pipeline.py
+```
 
-**Features**
-- `age`: Age
-- `workclass`: Working Class (Private, Self-emp-not-inc, Self-emp-inc, Federal-gov, Local-gov, State-gov, Without-pay, Never-worked)
-- `education_level`: Level of Education (Bachelors, Some-college, 11th, HS-grad, Prof-school, Assoc-acdm, Assoc-voc, 9th, 7th-8th, 12th, Masters, 1st-4th, 10th, Doctorate, 5th-6th, Preschool)
-- `education-num`: Number of educational years completed
-- `marital-status`: Marital status (Married-civ-spouse, Divorced, Never-married, Separated, Widowed, Married-spouse-absent, Married-AF-spouse)
-- `occupation`: Work Occupation (Tech-support, Craft-repair, Other-service, Sales, Exec-managerial, Prof-specialty, Handlers-cleaners, Machine-op-inspct, Adm-clerical, Farming-fishing, Transport-moving, Priv-house-serv, Protective-serv, Armed-Forces)
-- `relationship`: Relationship Status (Wife, Own-child, Husband, Not-in-family, Other-relative, Unmarried)
-- `race`: Race (White, Asian-Pac-Islander, Amer-Indian-Eskimo, Other, Black)
-- `sex`: Sex (Female, Male)
-- `capital-gain`: Monetary Capital Gains
-- `capital-loss`: Monetary Capital Losses
-- `hours-per-week`: Average Hours Per Week Worked
-- `native-country`: Native Country (United-States, Cambodia, England, Puerto-Rico, Canada, Germany, Outlying-US(Guam-USVI-etc), India, Japan, Greece, South, China, Cuba, Iran, Honduras, Philippines, Italy, Poland, Jamaica, Vietnam, Mexico, Portugal, Ireland, France, Dominican-Republic, Laos, Ecuador, Taiwan, Haiti, Columbia, Hungary, Guatemala, Nicaragua, Scotland, Thailand, Yugoslavia, El-Salvador, Trinadad&Tobago, Peru, Hong, Holand-Netherlands)
+This will:
+- Load census data from `data/raw/census.csv`
+- Build sklearn preprocessing pipeline (ColumnTransformer)
+- Train Decision Tree classifier
+- Save complete pipeline to `models/best_model.pkl`
 
-**Target Variable**
-- `income`: Income Class (<=50K, >50K)
+### 3. Run API Locally (without Docker)
+```bash
+python src/deployment/api.py
+```
+
+API will be available at: http://localhost:5000
+
+### 4. Deploy with Docker
+```bash
+# Build image
+docker build -t ml-api .
+
+# Run container
+docker run -p 5000:5000 ml-api
+```
+
+### 5. Make Predictions
+```bash
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d @sample_request.json
+```
+
+**Windows PowerShell:**
+```powershell
+Invoke-RestMethod -Uri http://localhost:5000/predict -Method Post -ContentType "application/json" -InFile sample_request.json
+```
+
+## Features
+
+### sklearn Pipeline Architecture
+- **ColumnTransformer**: Applies different transformations to different column groups
+- **Numerical Pipeline**: Log transform → Imputation → Scaling
+- **Categorical Pipeline**: Imputation → One-hot encoding / Binary encoding
+- **Complete Pipeline**: Preprocessing + Decision Tree in one object
+
+### Model
+- **Algorithm**: Decision Tree Classifier
+- **No grid search**: Uses sensible default hyperparameters
+- **Fast training**: Simple and efficient
+
+### Deployment
+- **Single pipeline file**: Everything in one `.pkl` file
+- **REST API**: Flask with CORS support
+- **Docker ready**: One command deployment
+
+## API Endpoints
+
+**Base URL**: http://localhost:5000
+
+### GET /health
+Health check endpoint
+
+```bash
+curl http://localhost:5000/health
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "pipeline_loaded": true
+}
+```
+
+### POST /predict
+Predict income level (<=50K or >50K)
+
+```bash
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d @sample_request.json
+```
+
+**Request Format:**
+```json
+{
+  "features": {
+    "age": 39,
+    "workclass": " State-gov",
+    "education_level": " Bachelors",
+    "education-num": 13.0,
+    "marital-status": " Never-married",
+    "occupation": " Adm-clerical",
+    "relationship": " Not-in-family",
+    "race": " White",
+    "sex": " Male",
+    "capital-gain": 2174.0,
+    "capital-loss": 0.0,
+    "hours-per-week": 40.0,
+    "native-country": " United-States"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "prediction": 0,
+  "probability": [0.85, 0.15]
+}
+```
+
+- `prediction`: 0 (<=50K) or 1 (>50K)
+- `probability`: [prob_class_0, prob_class_1]
+
+## Configuration
+
+Edit `configs/config.yaml` to customize:
+
+```yaml
+data:
+  raw_path: "data/raw/census.csv"
+  label: "income"
+  test_size: 0.2
+  random_state: 42
+
+preprocessing:
+  scaling: "minmax"
+  handle_missing: "mean"
+
+model:
+  output_path: "models/"
+
+deployment:
+  host: "0.0.0.0"
+  port: 5000
+  model_path: "models/best_model.pkl"
+```
+
+## Data Pipeline
+
+### Preprocessing Steps
+1. **Log Transform**: Applied to skewed features (capital-gain, capital-loss)
+2. **Numerical Features**: Imputation → MinMax scaling
+3. **Categorical Features**: 
+   - One-hot encoding for low cardinality (marital-status, relationship, race, sex)
+   - Binary encoding for high cardinality (education_level, occupation, native-country, workclass)
+
+### Column Groups
+- **Skewed**: capital-gain, capital-loss
+- **Numerical**: age, education-num, capital-gain, capital-loss, hours-per-week
+- **Categorical (One-hot)**: marital-status, relationship, race, sex
+- **Categorical (Binary)**: education_level, occupation, native-country, workclass
+
+## Docker Commands
+
+```bash
+# Build image
+docker build -t ml-api .
+
+# Run container
+docker run -p 5000:5000 ml-api
+
+# Run in background
+docker run -d -p 5000:5000 ml-api
+
+# View logs
+docker logs <container_id>
+
+# Stop container
+docker stop <container_id>
+
+# Remove container
+docker rm <container_id>
+```
+
+## Development
+
+### Project Components
+
+- **DataLoader** (`src/data/loader.py`): Loads census data
+- **DataPreprocessor** (`src/data/preprocessor.py`): sklearn Pipeline with ColumnTransformer
+- **ModelTrainer** (`src/models/trainer.py`): Trains Decision Tree pipeline
+- **API** (`src/deployment/api.py`): Flask REST API
+
+### Training Pipeline
+
+The training pipeline (`src/train_pipeline.py`) follows these steps:
+
+1. Load census data
+2. Build preprocessing pipeline
+3. Split data (train/test)
+4. Train Decision Tree pipeline
+5. Evaluate on test set
+6. Save complete pipeline
+
+### Key Design Decisions
+
+- **sklearn Pipeline**: All preprocessing and model in one object
+- **No grid search**: Faster training, good default parameters
+- **ColumnTransformer**: Clean separation of numerical/categorical processing
+- **Module-level functions**: Ensures pipeline can be pickled/unpickled
+- **Single file deployment**: Just load pipeline and predict
+
+## Troubleshooting
+
+### Pickle Error
+If you get a pickle error, ensure:
+- Lambda functions are replaced with module-level functions
+- All custom transformers are defined at module level
+- Python path includes project root
+
+### Module Not Found
+If you get `ModuleNotFoundError: No module named 'src'`:
+- Run from project root directory
+- API file adds project root to sys.path automatically
+
+### API Not Starting
+- Check if port 5000 is available
+- Ensure model file exists at `models/best_model.pkl`
+- Train the model first with `python src/train_pipeline.py`
