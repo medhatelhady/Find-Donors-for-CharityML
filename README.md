@@ -256,3 +256,34 @@ If you get `ModuleNotFoundError: No module named 'src'`:
 - Check if port 5000 is available
 - Ensure model file exists at `models/best_model.pkl`
 - Train the model first with `python src/train_pipeline.py`
+
+## Future Work
+
+### Autoscaling
+- **Kubernetes HPA**: Implement Horizontal Pod Autoscaler to automatically scale API replicas based on request load
+- **Load Balancing**: Add load balancer (nginx/HAProxy) to distribute traffic across multiple API instances
+- **Resource Optimization**: Profile and optimize memory usage for container efficiency
+
+### Monitoring
+
+#### Model Monitoring
+- **Model Performance Tracking**: Track prediction accuracy, precision, recall, and F1-score over time
+- **Model Drift Detection**: Monitor input data distribution shifts and alert when model retraining is recommended
+- **Prediction Confidence**: Track prediction confidence scores to identify uncertain predictions
+
+#### Data Monitoring
+- **Data Quality Checks**: Validate incoming request data against expected schema and ranges
+- **Anomaly Detection**: Alert on unusual input patterns that deviate from training data distribution
+- **Missing Value Tracking**: Monitor frequency of missing or null values in predictions
+
+#### Infrastructure Monitoring
+- **CPU Monitoring**: Track CPU usage with alerts for high utilization (>80%)
+- **RAM Monitoring**: Monitor memory consumption and alert on potential memory leaks
+- **Request Metrics**: Log response times, throughput, and error rates
+- **Health Checks**: Automated health checks and container restart policies
+
+### Implementation Stack (Recommended)
+- **Monitoring**: Prometheus + Grafana for metrics and visualization
+- **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana) for centralized logging
+- **Alerting**: AlertManager for automated alerts on threshold violations
+- **Container Orchestration**: Kubernetes for autoscaling and resource management
